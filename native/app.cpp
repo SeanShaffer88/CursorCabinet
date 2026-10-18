@@ -285,11 +285,22 @@ std::unique_ptr<Result> catalog(const fs::path &base, const fs::path &data, bool
         auto colors = static_cast<DWORD *>(pixels);
         for (int pixel = 0; pixel < tileWidth * tileHeight; ++pixel)
             colors[pixel] |= 0xff000000;
+        SelectObject(canvas, oldBitmap);
         if (ImageList_Add(out->images, bitmap, nullptr) < 0) {
             SelectObject(canvas, oldBitmap);
             DeleteObject(bitmap);
             DeleteDC(canvas);
             throw std::runtime_error("Cannot add cursor set preview");
+        }
+        SelectObject(canvas, bitmap);
+        SetPixel(canvas, 0, 25, RGB(255, 0, 255));
+        const int added = ImageList_GetImageCount(out->images) - 1;
+        const bool drawn = ImageList_Draw(out->images, added, canvas, 0, 0, ILD_NORMAL) != FALSE;
+        if (!drawn || GetPixel(canvas, 0, 25) != RGB(102, 114, 135)) {
+            SelectObject(canvas, oldBitmap);
+            DeleteObject(bitmap);
+            DeleteDC(canvas);
+            throw std::runtime_error("Cursor gallery pixel verification failed");
         }
     }
     SelectObject(canvas, oldBitmap);
