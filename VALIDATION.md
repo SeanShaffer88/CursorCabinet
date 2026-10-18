@@ -1,6 +1,6 @@
 # Native release validation
 
-Validation date: October 18, 2026. Version: 0.2.0 preview.
+Validation date: October 18, 2026. Version: 0.3.0 preview.
 
 ## Completed checks
 
@@ -9,14 +9,15 @@ Validation date: October 18, 2026. Version: 0.2.0 preview.
 - 29 core assertions passed, including partial registry write, disk full, reload failure, failed rollback, journal corruption, Unicode favorites, settings, INF parsing, and isolated registry read-back.
 - All 138 bundled schemes and 2,196 mapped cursor files loaded successfully, with zero catalog notices.
 - Deep portable extraction regression: the same 2,196 files loaded from a nested path exceeding the USER32 filename limit. Temporary app-owned staging preserves CUR hotspots and ANI bytes and deletes each staging file after loading.
-- Hidden native window test: search and empty-result behavior passed; 20 preview selections completed with stable GDI and USER object counts.
+- Hidden native window test: search and empty-result behavior passed; 20 preview selections completed with stable GDI and USER object counts. Gallery image count matches the catalog and every selected role matches the selected set mapping.
+- Gallery contact sheets use explicitly opaque 32-bit bitmaps to avoid black images caused by undefined GDI alpha. Each set has its own bordered tile, collection and role count; the inspector offers light/dark surfaces.
 - Real x64 apply/restore integration: applied an original pack, verified registry read-back, restored all touched values byte-for-byte, then validated replay of a durable recovery journal. The original Windows cursor scheme was restored.
 - Native ARM64 application and test executables cross-compiled successfully. An ARM64 GitHub Actions job is included for execution on Windows ARM64.
 - Installer and portable package checks are automated by `scripts/test-packages.ps1`; the release check report records the tested artifacts.
 
 ## Performance sample
 
-The x64 native smoke test with 138 schemes recorded zero process CPU time over a two-second idle interval. Private committed memory was approximately 4.7 MiB and working set approximately 16.2 MiB. GDI and USER object counts remained stable over 20 preview selections.
+The x64 native smoke test with 138 schemes recorded zero process CPU time over a two-second idle interval. With collective gallery contact sheets, private committed memory was approximately 13.9 MiB and working set approximately 25.3 MiB. GDI and USER object counts remained stable over 20 preview selections.
 
 The working set exceeds the requested 15 MiB target. This is a measured limitation, not a claimed pass; no forced working-set trimming or artificial metric cap is used. Windows version, theme, DPI, antivirus hooks, and system DLL residency can change the measurements. Production mode has no idle timer; the two-second timer is test-only.
 

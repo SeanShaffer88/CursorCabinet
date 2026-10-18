@@ -7,8 +7,8 @@ CursorCabinet is a Windows desktop app for browsing free cursor sets, previewing
 ## Features
 
 - **138 bundled schemes** across seven projects, including color, size, and handedness variants.
-- Thumbnail previews, search, collection filters, and favorites.
-- Individual cursor previews: hover over a preview to try it inside the app.
+- Separate gallery cards show all mapped pointers together for each set, with collection and role counts. Search, collection filters, and favorites narrow the gallery.
+- A selected-set inspector labels every cursor role. Switch between light and dark preview surfaces and hover over a pointer to try it inside the app.
 - Apply a set to your Windows account and restore the immediately preceding scheme.
 - Import supported cursor folders and discover more sets on DeviantArt.
 - Browse downloaded collections offline.

@@ -1,8 +1,8 @@
 #include <windows.h>
 101 ICON "../assets/CursorCabinet.ico"
 1 VERSIONINFO
- FILEVERSION 0,2,0,0
- PRODUCTVERSION 0,2,0,0
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
  FILEFLAGSMASK 0x3fL
  FILEOS VOS_NT_WINDOWS32
  FILETYPE VFT_APP
@@ -13,12 +13,12 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "Sean Shaffer"
    VALUE "FileDescription", "CursorCabinet — Windows cursor collection"
-   VALUE "FileVersion", "0.2.0"
+   VALUE "FileVersion", "0.3.0"
    VALUE "InternalName", "CursorCabinet"
    VALUE "LegalCopyright", "Copyright (c) 2026 Sean Shaffer. MIT licensed."
    VALUE "OriginalFilename", "CursorCabinet.exe"
    VALUE "ProductName", "CursorCabinet"
-   VALUE "ProductVersion", "0.2.0"
+   VALUE "ProductVersion", "0.3.0"
   END
  END
  BLOCK "VarFileInfo"

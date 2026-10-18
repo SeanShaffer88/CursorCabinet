@@ -30,6 +30,7 @@ int smokeSelections = 0;
 DWORD smokeGdiStart = 0;
 int smokeExitCode = 0;
 bool smokeSearchPassed = false;
+bool smokeSetsPassed = true;
 DWORD smokeUserStart = 0;
 bool cliMode = false;
 std::atomic<bool> cancelled{false};
@@ -54,7 +55,9 @@ enum Id {
     MouseSettings,
     Help,
     OpenData,
-    Active
+    Active,
+    Contrast,
+    Sort
 };
 struct Result {
     enum Kind { Catalog, Cursors, Operation, SavedFavorites } kind = Operation;
@@ -147,6 +150,7 @@ struct State {
     std::optional<size_t> selected;
     bool busy = false, closing = false, startup = true, recoveryBlocked = false, rebuilding = false,
          restoreAvailable = false;
+    bool darkPreview = false;
     int sortColumn = 0;
     int dpi = 96;
     ~State() {
@@ -218,20 +222,79 @@ std::unique_ptr<Result> catalog(const fs::path &base, const fs::path &data, bool
     if (out->restoreAvailable) {
         auto snapshot = readJournal(data / L"previous.ccj");
     }
+    // Each image belongs to exactly one scheme: no cursor roles cross set boundaries.
+    constexpr int tileWidth = 216, tileHeight = 110;
     out->images =
-        ImageList_Create(32, 32, ILC_COLOR32 | ILC_MASK, static_cast<int>(out->themes.size() + 1), 16);
+        ImageList_Create(tileWidth, tileHeight, ILC_COLOR32, static_cast<int>(out->themes.size() + 1), 1);
     if (!out->images)
-        throw std::runtime_error("Cannot allocate thumbnail list");
-    for (auto &t : out->themes) {
-        try {
-            auto h = loadCursor(t.files[0]);
-            if (ImageList_AddIcon(out->images, reinterpret_cast<HICON>(h.get())) < 0)
-                throw std::runtime_error("Cannot add cursor thumbnail");
-        } catch (const std::exception &e) {
-            warnings.push_back(t.name + L": " + message(e));
-            ImageList_AddIcon(out->images, LoadIconW(nullptr, IDI_APPLICATION));
+        throw std::runtime_error("Cannot allocate set gallery");
+    HDC screen = GetDC(nullptr);
+    HDC canvas = CreateCompatibleDC(screen);
+    BITMAPINFO bitmapInfo{};
+    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmapInfo.bmiHeader.biWidth = tileWidth;
+    bitmapInfo.bmiHeader.biHeight = -tileHeight;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = 32;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+    void *pixels = nullptr;
+    HBITMAP bitmap = CreateDIBSection(screen, &bitmapInfo, DIB_RGB_COLORS, &pixels, nullptr, 0);
+    ReleaseDC(nullptr, screen);
+    if (!canvas || !bitmap) {
+        if (bitmap)
+            DeleteObject(bitmap);
+        if (canvas)
+            DeleteDC(canvas);
+        throw std::runtime_error("Cannot allocate set preview canvas");
+    }
+    auto oldBitmap = SelectObject(canvas, bitmap);
+    for (const auto &t : out->themes) {
+        RECT bounds{0, 0, tileWidth, tileHeight};
+        FillRect(canvas, &bounds, reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1));
+        for (size_t role = 0; role < RoleCount; ++role) {
+            int x = static_cast<int>(role % 9) * 24;
+            int y = static_cast<int>(role / 9) * 42;
+            RECT cell{x, y, x + 24, y + 42};
+            // A split neutral background makes both white and black artwork visible.
+            FillRect(canvas, &cell, GetSysColorBrush(COLOR_3DFACE));
+            RECT dark{x, y + 21, x + 24, y + 42};
+            HBRUSH shade = CreateSolidBrush(RGB(102, 114, 135));
+            FillRect(canvas, &dark, shade);
+            DeleteObject(shade);
+            if (t.files[role].empty())
+                continue;
+            try {
+                auto cursor = loadCursor(t.files[role]);
+                DrawIconEx(canvas, x, y + 9, cursor.get(), 24, 24, 0, nullptr, DI_NORMAL);
+            } catch (const std::exception &e) {
+                warnings.push_back(t.name + L": " + message(e));
+            }
+        }
+        auto roles =
+            std::count_if(t.files.begin(), t.files.end(), [](const auto &file) { return !file.empty(); });
+        std::wstring metadata = t.collection + L" · " + std::to_wstring(roles) + L" / 17 roles";
+        RECT caption{2, 87, tileWidth - 2, tileHeight};
+        auto oldFont = SelectObject(canvas, GetStockObject(DEFAULT_GUI_FONT));
+        SetTextColor(canvas, RGB(72, 88, 112));
+        SetBkMode(canvas, TRANSPARENT);
+        DrawTextW(canvas, metadata.c_str(), -1, &caption,
+                  DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
+        SelectObject(canvas, oldFont);
+        GdiFlush();
+        // GDI text/fills leave alpha undefined; publish every contact-sheet pixel as opaque.
+        auto colors = static_cast<DWORD *>(pixels);
+        for (int pixel = 0; pixel < tileWidth * tileHeight; ++pixel)
+            colors[pixel] |= 0xff000000;
+        if (ImageList_Add(out->images, bitmap, nullptr) < 0) {
+            SelectObject(canvas, oldBitmap);
+            DeleteObject(bitmap);
+            DeleteDC(canvas);
+            throw std::runtime_error("Cannot add cursor set preview");
         }
     }
+    SelectObject(canvas, oldBitmap);
+    DeleteObject(bitmap);
+    DeleteDC(canvas);
     for (auto &w : warnings)
         log(data, "event=catalog_warning detail=" + utf8(w));
     out->notice = std::to_wstring(out->themes.size()) + L" cursor sets ready";
@@ -328,9 +391,9 @@ void select() {
                    favorite(theme) ? L"Remove favorite" : L"Add favorite");
     auto count =
         std::count_if(theme.files.begin(), theme.files.end(), [](const auto &p) { return !p.empty(); });
-    SetWindowTextW(
-        state->detail,
-        (theme.name + L"\r\n" + std::to_wstring(count) + L" / 17 roles | Hover below to try").c_str());
+    SetWindowTextW(state->detail, (theme.name + L"\r\n" + theme.collection + L" · " + std::to_wstring(count) +
+                                   L" / 17 roles | Hover below to try")
+                                      .c_str());
     launch(
         [theme] {
             auto r = std::make_unique<Result>();
@@ -343,6 +406,14 @@ void select() {
         L"Loading cursor previews...");
 }
 void smokeNext() {
+    if (smokeSelections > 0 && state->selected) {
+        const auto &theme = state->themes[*state->selected];
+        for (size_t role = 0; role < RoleCount; ++role)
+            smokeSetsPassed =
+                smokeSetsPassed && (static_cast<bool>(state->cursors[role]) == !theme.files[role].empty());
+    }
+    smokeSetsPassed =
+        smokeSetsPassed && ImageList_GetImageCount(state->images) == static_cast<int>(state->themes.size());
     if (smokeSelections == 0) {
         SendMessageW(GetDlgItem(state->window, Favorites), BM_SETCHECK, BST_UNCHECKED, 0);
         SendMessageW(state->collection, CB_SETCURSEL, 0, 0);
@@ -438,7 +509,8 @@ void smokeFinish() {
     bool stable = gdi <= smokeGdiStart + 2 && users <= smokeUserStart + 2;
     report << "user_start=" << smokeUserStart << "\nuser_end=" << users
            << "\nsearch_and_empty_state_passed=" << (smokeSearchPassed ? "true" : "false") << "\n";
-    smokeExitCode = stable && smokeSearchPassed ? 0 : 1;
+    report << "gallery_set_boundaries_passed=" << (smokeSetsPassed ? "true" : "false") << "\n";
+    smokeExitCode = stable && smokeSearchPassed && smokeSetsPassed ? 0 : 1;
     writeText(smokeReport, report.str());
     DestroyWindow(state->window);
 }
@@ -511,6 +583,25 @@ void command(int id) {
     }
     if (state->busy)
         return;
+    if (id == Sort) {
+        if (!state->preferences.descending)
+            state->preferences.descending = true;
+        else {
+            state->preferences.descending = false;
+            state->sortColumn = !state->sortColumn;
+        }
+        SetWindowTextW(GetDlgItem(state->window, Sort),
+                       state->sortColumn ? L"Sort: collection" : L"Sort: name");
+        filter();
+        return;
+    }
+    if (id == Contrast) {
+        state->darkPreview = !state->darkPreview;
+        SetWindowTextW(GetDlgItem(state->window, Contrast),
+                       state->darkPreview ? L"Light preview" : L"Dark preview");
+        InvalidateRect(state->preview, nullptr, TRUE);
+        return;
+    }
     if (id == ClearSearch) {
         SetWindowTextW(state->search, L"");
         SetFocus(state->search);
@@ -538,7 +629,7 @@ void command(int id) {
     if (id == Help) {
         MessageBoxW(
             state->window,
-            L"CursorCabinet 0.2.0\nFree, open-source cursor browsing for Windows.\n\nSelect a set and hover "
+            L"CursorCabinet 0.3.0\nFree, open-source cursor browsing for Windows.\n\nSelect a set and hover "
             L"over its pointers to try it.\nApply saves the current scheme first. Restore previous undoes "
             L"the latest application.\n\nCtrl+F: Search     F5: Refresh library\nCtrl+D: Favorite     "
             L"Ctrl+O: Import folder\nEnter (in the list): Apply     F1: Help\nEscape (in search): Clear "
@@ -640,6 +731,7 @@ void layout() {
     place(Discover, p(810), p(64), p(130), p(31));
     place(Help, p(954), p(64), p(40), p(31));
     place(Detail, w - side, p(124), side - gap, p(65));
+    place(Contrast, w - side, p(94), side - gap, p(25));
     place(List, gap, p(124), w - side - gap * 2, h - p(216));
     place(Preview, w - side, p(194), side - gap, std::max(p(330), h - p(350)));
     place(Apply, w - side, h - p(143), side - gap, p(36));
@@ -649,9 +741,9 @@ void layout() {
     place(Refresh, gap, h - p(78), p(100), p(30));
     place(MouseSettings, p(130), h - p(78), p(153), p(30));
     place(OpenData, p(295), h - p(78), p(130), p(30));
+    place(Sort, p(437), h - p(78), p(160), p(30));
     place(Status, gap, h - p(39), w - side - gap * 2, p(29));
-    ListView_SetColumnWidth(state->list, 0, std::max(p(240), w - side - p(232)));
-    ListView_SetColumnWidth(state->list, 1, p(175));
+    ListView_SetIconSpacing(state->list, std::max(p(238), 238), std::max(p(174), 174));
 }
 void saveAndClose() {
     state->closing = true;
@@ -737,14 +829,18 @@ LRESULT CALLBACK previewProc(HWND hwnd, UINT msg, WPARAM w, LPARAM l) {
         for (size_t i = 0; i < RoleCount; ++i) {
             int x = static_cast<int>(i % 3) * cellW, y = static_cast<int>(i / 3) * cellH;
             RECT cell{x + 3, y + 3, x + cellW - 3, y + cellH - 3};
-            FillRect(dc, &cell, reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1));
+            HBRUSH surface = CreateSolidBrush(state->darkPreview ? RGB(40, 49, 65) : RGB(255, 255, 255));
+            FillRect(dc, &cell, surface);
+            DeleteObject(surface);
             if (state->cursors[i])
                 DrawIconEx(dc, x + (cellW - state->px(30)) / 2, y + state->px(5), state->cursors[i].get(),
                            state->px(30), state->px(30), 0, nullptr, DI_NORMAL);
             RECT label{x + 3, y + state->px(39), x + cellW - 3, y + cellH - 3};
-            SetTextColor(dc, RGB(62, 74, 94));
-            DrawTextW(dc, state->cursors[i] ? RoleLabels[i] : L"Default", -1, &label,
-                      DT_CENTER | DT_WORDBREAK | DT_END_ELLIPSIS);
+            SetTextColor(dc, state->darkPreview ? RGB(222, 231, 244) : RGB(62, 74, 94));
+            std::wstring caption = RoleLabels[i];
+            if (state->selected && !state->cursors[i])
+                caption += L" (default)";
+            DrawTextW(dc, caption.c_str(), -1, &label, DT_CENTER | DT_WORDBREAK | DT_END_ELLIPSIS);
         }
         EndPaint(hwnd, &ps);
         return 0;
@@ -815,21 +911,17 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM w, LPARAM l) {
             control(WC_BUTTONW, L"Refresh", WS_TABSTOP, Refresh);
             control(WC_BUTTONW, L"Mouse settings", WS_TABSTOP, MouseSettings);
             control(WC_BUTTONW, L"App data", WS_TABSTOP, OpenData);
+            control(WC_BUTTONW, L"Sort: name", WS_TABSTOP, Sort);
+            control(WC_BUTTONW, L"Dark preview", WS_TABSTOP, Contrast);
             state->preview = control(L"CursorCabinetPreview", L"", 0, Preview);
             state->list =
                 control(WC_LISTVIEWW, L"",
-                        LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_TABSTOP | WS_BORDER, List);
+                        LVS_ICON | LVS_AUTOARRANGE | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_TABSTOP, List);
             ListView_SetExtendedListViewStyle(state->list,
                                               LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
-            LVCOLUMNW col{};
-            col.mask = LVCF_TEXT | LVCF_WIDTH;
-            col.cx = 350;
-            wchar_t first[] = L"Cursor set", second[] = L"Collection";
-            col.pszText = first;
-            ListView_InsertColumn(state->list, 0, &col);
-            col.pszText = second;
-            col.cx = 210;
-            ListView_InsertColumn(state->list, 1, &col);
+            ListView_SetBkColor(state->list, RGB(246, 248, 252));
+            ListView_SetTextBkColor(state->list, CLR_NONE);
+            ListView_SetTextColor(state->list, RGB(37, 52, 77));
             fonts();
             tips();
             state->worker.start(hwnd);
@@ -867,6 +959,31 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM w, LPARAM l) {
         }
         case WM_NOTIFY: {
             auto header = reinterpret_cast<NMHDR *>(l);
+            if (header->idFrom == List && header->code == NM_CUSTOMDRAW) {
+                auto draw = reinterpret_cast<NMLVCUSTOMDRAW *>(l);
+                if (draw->nmcd.dwDrawStage == CDDS_PREPAINT)
+                    return CDRF_NOTIFYITEMDRAW;
+                if (draw->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
+                    return CDRF_NOTIFYPOSTPAINT;
+                if (draw->nmcd.dwDrawStage == CDDS_ITEMPOSTPAINT) {
+                    RECT card{};
+                    ListView_GetItemRect(state->list, static_cast<int>(draw->nmcd.dwItemSpec), &card,
+                                         LVIR_BOUNDS);
+                    InflateRect(&card, -2, -2);
+                    bool chosen = (ListView_GetItemState(state->list, static_cast<int>(draw->nmcd.dwItemSpec),
+                                                         LVIS_SELECTED) &
+                                   LVIS_SELECTED) != 0;
+                    HPEN outline =
+                        CreatePen(PS_SOLID, chosen ? 2 : 1, chosen ? RGB(56, 102, 210) : RGB(211, 220, 233));
+                    auto oldPen = SelectObject(draw->nmcd.hdc, outline);
+                    auto oldBrush = SelectObject(draw->nmcd.hdc, GetStockObject(NULL_BRUSH));
+                    RoundRect(draw->nmcd.hdc, card.left, card.top, card.right, card.bottom, 10, 10);
+                    SelectObject(draw->nmcd.hdc, oldBrush);
+                    SelectObject(draw->nmcd.hdc, oldPen);
+                    DeleteObject(outline);
+                }
+                return CDRF_DODEFAULT;
+            }
             if (header->idFrom == List && header->code == LVN_COLUMNCLICK && !state->busy) {
                 auto info = reinterpret_cast<NMLISTVIEW *>(l);
                 if (state->sortColumn == info->iSubItem)
@@ -926,7 +1043,7 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM w, LPARAM l) {
                 auto old = state->images;
                 state->images = r->images;
                 r->images = nullptr;
-                ListView_SetImageList(state->list, state->images, LVSIL_SMALL);
+                ListView_SetImageList(state->list, state->images, LVSIL_NORMAL);
                 if (old)
                     ImageList_Destroy(old);
                 state->themes = std::move(r->themes);
