@@ -1,0 +1,46 @@
+name: Native Windows checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            runner: windows-2022
+          - architecture: arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Build and run isolated core tests
+        shell: pwsh
+        run: ./build-native.ps1 -Architecture ${{ matrix.architecture }} -Test
+      - name: Download pinned artwork and corresponding sources
+        shell: pwsh
+        run: ./scripts/download-packs.ps1 -Destination ./dist/${{ matrix.architecture }}
+      - name: Validate every bundled cursor
+        shell: pwsh
+        run: |
+          $p=Start-Process ./dist/${{ matrix.architecture }}/CursorCabinet.exe -ArgumentList '--verify' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Verification failed: $($p.ExitCode)" }
+          Get-Content ./dist/${{ matrix.architecture }}/verification.txt
+      - name: Exercise native UI without applying cursors
+        shell: pwsh
+        run: |
+          $p=Start-Process ./dist/${{ matrix.architecture }}/CursorCabinet.exe -ArgumentList '--smoke-test' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "UI smoke test failed: $($p.ExitCode)" }
+          Get-Content ./dist/${{ matrix.architecture }}/smoke-test.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-checks-${{ matrix.architecture }}
+          path: |
+            dist/${{ matrix.architecture }}/CursorCabinet.exe
+            dist/${{ matrix.architecture }}/*.txt

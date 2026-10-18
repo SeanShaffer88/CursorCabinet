@@ -1,0 +1,227 @@
+{
+  "schema": 1,
+  "collections": [
+    {
+      "repository": "ful1e5/Bibata_Cursor",
+      "tag": "v2.0.7",
+      "source": {
+        "url": "https://api.github.com/repos/ful1e5/Bibata_Cursor/zipball/v2.0.7",
+        "name": "ful1e5_Bibata_Cursor-v2.0.7-source.zip",
+        "sha256": "0caeec265c6ff407a8e8bffa8409c5bc223a0a082e08f30d12e7a3a2cb99ce90"
+      },
+      "assets": [
+        {
+          "name": "Bibata-Modern-Amber-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Amber-Right-Windows.zip",
+          "sha256": "6a68cfefaa082445dcc2cb647ee4f4d17d8f4c858fc3d5d0165cd44561ac78cc"
+        },
+        {
+          "name": "Bibata-Modern-Amber-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Amber-Windows.zip",
+          "sha256": "5151e0f8648d00fb734fea501def12b5cc1fbc65ba12a6e28db2e1295ebf8961"
+        },
+        {
+          "name": "Bibata-Modern-Classic-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Classic-Right-Windows.zip",
+          "sha256": "0949d0857d614bbbea79350b823a5cc7203b4220a716350918ef40f647d450bc"
+        },
+        {
+          "name": "Bibata-Modern-Classic-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Classic-Windows.zip",
+          "sha256": "b98eca4077d6e7796ff7e710e4d220ca13439f1118160d1e7b3db9e91fdec2be"
+        },
+        {
+          "name": "Bibata-Modern-Ice-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice-Right-Windows.zip",
+          "sha256": "6adec5b9db0e3c5ec218821a1c1f62ccd83f43fd2257a0e31b1a99d815f7e9c3"
+        },
+        {
+          "name": "Bibata-Modern-Ice-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice-Windows.zip",
+          "sha256": "0045e40324da5b540b3bee260f53d0792df62be9cdef91655a024ae9f151bd04"
+        },
+        {
+          "name": "Bibata-Original-Amber-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Amber-Right-Windows.zip",
+          "sha256": "32acb00c4181be3851be3302630eaf42a4aae5f3a1c1e11df06b7380777dd2d0"
+        },
+        {
+          "name": "Bibata-Original-Amber-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Amber-Windows.zip",
+          "sha256": "cdae96d74c55e11142a72a1d8cc9a2a2c4a9efd3e792623dd1033043f319e4e5"
+        },
+        {
+          "name": "Bibata-Original-Classic-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Classic-Right-Windows.zip",
+          "sha256": "35ebc194729fea454d98fbe40d8a550a38d4434f6037f72f7fdb39cd28be9234"
+        },
+        {
+          "name": "Bibata-Original-Classic-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Classic-Windows.zip",
+          "sha256": "5b1d47004039f5c844f0e21fa3498f6396790e9133ea7f8396e6487a3000a34e"
+        },
+        {
+          "name": "Bibata-Original-Ice-Right-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Ice-Right-Windows.zip",
+          "sha256": "caa802eda19eb6c704530ea918c9b4b6edd336268f5c8e89bd0a58e26f556b1d"
+        },
+        {
+          "name": "Bibata-Original-Ice-Windows.zip",
+          "url": "https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Original-Ice-Windows.zip",
+          "sha256": "868f2afc0fd91d334ec71962c339606defa5d85ce58fccc04485d54a4ac71aa2"
+        }
+      ]
+    },
+    {
+      "repository": "ful1e5/fuchsia-cursor",
+      "tag": "v2.0.1",
+      "source": {
+        "url": "https://api.github.com/repos/ful1e5/fuchsia-cursor/zipball/v2.0.1",
+        "name": "ful1e5_fuchsia-cursor-v2.0.1-source.zip",
+        "sha256": "54b0470df7d4cf9b1be53b0180d168bee31c059a8465261cd27fbd0a8a924456"
+      },
+      "assets": [
+        {
+          "name": "Fuchsia-Amber-Windows.zip",
+          "url": "https://github.com/ful1e5/fuchsia-cursor/releases/download/v2.0.1/Fuchsia-Amber-Windows.zip",
+          "sha256": "203aeeb2122f638f70b5afc569de89be3d9f3037b3fbd47c39e58088f345e997"
+        },
+        {
+          "name": "Fuchsia-Pop-Windows.zip",
+          "url": "https://github.com/ful1e5/fuchsia-cursor/releases/download/v2.0.1/Fuchsia-Pop-Windows.zip",
+          "sha256": "7b1064c600f1fa7a843ef1348f8f0b9eb60ce4bd4926d9a604812a54a7b3a052"
+        },
+        {
+          "name": "Fuchsia-Red-Windows.zip",
+          "url": "https://github.com/ful1e5/fuchsia-cursor/releases/download/v2.0.1/Fuchsia-Red-Windows.zip",
+          "sha256": "f9a4e06d3d9ac5b3958872cf88753b05a2d1697866e6b49755d97276e71993c4"
+        },
+        {
+          "name": "Fuchsia-Windows.zip",
+          "url": "https://github.com/ful1e5/fuchsia-cursor/releases/download/v2.0.1/Fuchsia-Windows.zip",
+          "sha256": "4abdbadb36e0a24410792a8f372a3eaacf9b08f63c4a0ad29170c89e8e435c68"
+        }
+      ]
+    },
+    {
+      "repository": "rose-pine/cursors",
+      "tag": "v1.1.0",
+      "source": {
+        "url": "https://api.github.com/repos/rose-pine/cursors/zipball/v1.1.0",
+        "name": "rose-pine_cursors-v1.1.0-source.zip",
+        "sha256": "ef68b266d730e3d93b139291b7cf11a41b56a77510f7aabe012dfec90d0c0dfb"
+      },
+      "assets": [
+        {
+          "name": "BreezeX-RosePine-Windows.zip",
+          "url": "https://github.com/rose-pine/cursors/releases/download/v1.1.0/BreezeX-RosePine-Windows.zip",
+          "sha256": "d38e9c3a6c72a9ab26d11d9fb31204e4255ec8a16db8f9918c1f9edc36047f71"
+        },
+        {
+          "name": "BreezeX-RosePineDawn-Windows.zip",
+          "url": "https://github.com/rose-pine/cursors/releases/download/v1.1.0/BreezeX-RosePineDawn-Windows.zip",
+          "sha256": "9d92fac5089d92080b59d7b72fa975472ca88d10fa2a19189b1d1bc1b1b0ee67"
+        }
+      ]
+    },
+    {
+      "repository": "SakibShahariar/material-bibata-cursor",
+      "tag": "v1.5.0",
+      "source": {
+        "url": "https://api.github.com/repos/SakibShahariar/material-bibata-cursor/zipball/v1.5.0",
+        "name": "SakibShahariar_material-bibata-cursor-v1.5.0-source.zip",
+        "sha256": "510dd8a7707aedd66015a1d010ac96ee6993427bfe89f063743f86e660552e74"
+      },
+      "assets": [
+        {
+          "name": "bibata-material-dark-v1.5.0-win.zip",
+          "url": "https://github.com/SakibShahariar/material-bibata-cursor/releases/download/v1.5.0/bibata-material-dark-v1.5.0-win.zip",
+          "sha256": "d2a1d8ebd88d6e260d6f156e56e2d46a988dd59eb4c7ce4456e7c9347dcdd831"
+        },
+        {
+          "name": "bibata-material-light-v1.5.0-win.zip",
+          "url": "https://github.com/SakibShahariar/material-bibata-cursor/releases/download/v1.5.0/bibata-material-light-v1.5.0-win.zip",
+          "sha256": "f0bbb762f6004d4682be0e403de086d1bee752d733dfca5e4ac9463764b6d3d4"
+        }
+      ]
+    },
+    {
+      "repository": "ful1e5/Google_Cursor",
+      "tag": "v2.0.0",
+      "source": {
+        "url": "https://api.github.com/repos/ful1e5/Google_Cursor/zipball/v2.0.0",
+        "name": "ful1e5_Google_Cursor-v2.0.0-source.zip",
+        "sha256": "b3163e4459d61748d8294a0e26709e102901b1d69257ef4e2b7d9f12d70f3240"
+      },
+      "assets": [
+        {
+          "name": "GoogleDot-Black-Windows.zip",
+          "url": "https://github.com/ful1e5/Google_Cursor/releases/download/v2.0.0/GoogleDot-Black-Windows.zip",
+          "sha256": "10876e7c232e19e0805aba1aa2ca4393d047e8091cf3fe0266db567078bf2a71"
+        },
+        {
+          "name": "GoogleDot-Blue-Windows.zip",
+          "url": "https://github.com/ful1e5/Google_Cursor/releases/download/v2.0.0/GoogleDot-Blue-Windows.zip",
+          "sha256": "0fbecb1659e2c01ff6f5028aff29b0696e2b01b39a81f084f7e713b92443baf3"
+        },
+        {
+          "name": "GoogleDot-Red-Windows.zip",
+          "url": "https://github.com/ful1e5/Google_Cursor/releases/download/v2.0.0/GoogleDot-Red-Windows.zip",
+          "sha256": "650736629eeccf5a8ec8bb4466243e90e077a24a0e6fca6ca77da1a183f94edd"
+        },
+        {
+          "name": "GoogleDot-White-Windows.zip",
+          "url": "https://github.com/ful1e5/Google_Cursor/releases/download/v2.0.0/GoogleDot-White-Windows.zip",
+          "sha256": "e020a52418d0b321d8e905841d16414236424b2d80a338319382daaabda8e025"
+        }
+      ]
+    },
+    {
+      "repository": "ful1e5/apple_cursor",
+      "tag": "v2.0.1",
+      "source": {
+        "url": "https://api.github.com/repos/ful1e5/apple_cursor/zipball/v2.0.1",
+        "name": "ful1e5_apple_cursor-v2.0.1-source.zip",
+        "sha256": "d868d1d113e97f7c08a8f975a3f7d20997ccb24694378108396a45371518b980"
+      },
+      "assets": [
+        {
+          "name": "macOS-White-Windows.zip",
+          "url": "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-White-Windows.zip",
+          "sha256": "241585cf0f2476fc89b1fc6f6a773e06749ae35cff55f6a0daed5722a3b1c794"
+        },
+        {
+          "name": "macOS-Windows.zip",
+          "url": "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-Windows.zip",
+          "sha256": "64a2c74780908954a2ec497f67919709280ebb8ebdf3e3b9336bac071589c9de"
+        }
+      ]
+    },
+    {
+      "repository": "ful1e5/XCursor-pro",
+      "tag": "v2.0.2",
+      "source": {
+        "url": "https://api.github.com/repos/ful1e5/XCursor-pro/zipball/v2.0.2",
+        "name": "ful1e5_XCursor-pro-v2.0.2-source.zip",
+        "sha256": "223d88aab13809a66df6eaf795bcdf4be33824e3143fcfcbfaf7c5d72fa7c3a3"
+      },
+      "assets": [
+        {
+          "name": "XCursor-Pro-Dark-Windows.zip",
+          "url": "https://github.com/ful1e5/XCursor-pro/releases/download/v2.0.2/XCursor-Pro-Dark-Windows.zip",
+          "sha256": "8b3235a6700017934f9092907ead683faf2e25de5d7934f773c44e04de6d8cc0"
+        },
+        {
+          "name": "XCursor-Pro-Light-Windows.zip",
+          "url": "https://github.com/ful1e5/XCursor-pro/releases/download/v2.0.2/XCursor-Pro-Light-Windows.zip",
+          "sha256": "39c2074727bd6f1f3a6e4f1faf5f4bb3a08a314db91e020c5a405cfc94a356d1"
+        },
+        {
+          "name": "XCursor-Pro-Red-Windows.zip",
+          "url": "https://github.com/ful1e5/XCursor-pro/releases/download/v2.0.2/XCursor-Pro-Red-Windows.zip",
+          "sha256": "4938ebcf5fc71279bc2335ab2ae4692fa6febb63bcf514d08ff911c396f21a26"
+        }
+      ]
+    }
+  ]
+}
