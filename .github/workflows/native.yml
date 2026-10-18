@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       - name: Build and run isolated core tests
         shell: pwsh
         run: ./build-native.ps1 -Architecture ${{ matrix.architecture }} -Test
@@ -38,7 +38,7 @@ jobs:
           $p=Start-Process ./dist/${{ matrix.architecture }}/CursorCabinet.exe -ArgumentList '--smoke-test' -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw "UI smoke test failed: $($p.ExitCode)" }
           Get-Content ./dist/${{ matrix.architecture }}/smoke-test.txt
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: native-checks-${{ matrix.architecture }}
           path: |

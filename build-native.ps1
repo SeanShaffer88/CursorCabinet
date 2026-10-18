@@ -18,8 +18,19 @@ if (!$vsPath) {
 if (!$vsPath) { throw 'MSVC C++ build tools were not found.' }
 $toolsetPath = Get-ChildItem (Join-Path $vsPath 'VC\Tools\MSVC') -Directory | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
 $sdkRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10'
-$sdkVersion = Get-ChildItem (Join-Path $sdkRoot 'Include') -Directory | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty Name
 $hostArchitecture = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+$sdkVersion = Get-ChildItem (Join-Path $sdkRoot 'Include') -Directory | Sort-Object Name -Descending | Where-Object {
+    (Test-Path -LiteralPath (Join-Path $_.FullName 'um\Windows.h')) -and
+    (Test-Path -LiteralPath "$sdkRoot\Lib\$($_.Name)\um\$Architecture\kernel32.lib") -and
+    (Test-Path -LiteralPath "$sdkRoot\Lib\$($_.Name)\ucrt\$Architecture\libucrt.lib")
+} | Select-Object -First 1 -ExpandProperty Name
+if (!$sdkVersion) { throw "A complete Windows SDK with $Architecture libraries is required." }
+$resourceCompiler = Get-ChildItem (Join-Path $sdkRoot 'bin') -Directory | Where-Object Name -Match '^\d+\.\d+\.\d+\.\d+$' | Sort-Object Name -Descending | ForEach-Object {
+    Join-Path $_.FullName "$hostArchitecture\rc.exe"
+} | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (!$resourceCompiler) { throw "Windows SDK resource compiler for $hostArchitecture is missing." }
+$resourceDirectory = Split-Path $resourceCompiler -Parent
+Write-Host "Windows SDK $sdkVersion; resource tools: $resourceDirectory"
 $compilerPath = Join-Path $toolsetPath "bin\Host$hostArchitecture\$Architecture\cl.exe"
 if ($ToolsetOverlay) { $compilerPath = Join-Path ([IO.Path]::GetFullPath($ToolsetOverlay)) "bin\Hostx64\$Architecture\cl.exe" }
 if (!(Test-Path -LiteralPath $compilerPath)) { throw "The MSVC $Architecture compiler is missing. Install its C++ build tools component." }
@@ -33,11 +44,11 @@ $testPath = Join-Path $repoRoot 'tests\core_tests.cpp'
 $compilerFlags = '/nologo /std:c++17 /utf-8 /EHsc /W4 /WX /O2 /MT /GS /guard:cf /DUNICODE /D_UNICODE /DWIN32_LEAN_AND_MEAN /DNOMINMAX /D_WIN32_WINNT=0x0A00'
 $script = @"
 @echo off
-set "PATH=$compilerDirectory;$toolsetPath\bin\Host$hostArchitecture\$hostArchitecture;$sdkRoot\bin\$sdkVersion\$hostArchitecture;%PATH%"
+set "PATH=$compilerDirectory;$toolsetPath\bin\Host$hostArchitecture\$hostArchitecture;$resourceDirectory;%PATH%"
 set "INCLUDE=$includePaths"
 set "LIB=$libraryPaths"
 cd /d "$buildPath"
-rc /nologo /c65001 /I"$sourcePath" /fo "$buildPath\CursorCabinet.res" "$sourcePath\CursorCabinet.rc"
+"$resourceCompiler" /nologo /c65001 /I"$sourcePath" /fo "$buildPath\CursorCabinet.res" "$sourcePath\CursorCabinet.rc"
 if errorlevel 1 exit /b 1
 "$compilerPath" $compilerFlags /I"$sourcePath" "$sourcePath\core.cpp" "$sourcePath\app.cpp" "$buildPath\CursorCabinet.res" /Fe:"$distPath\CursorCabinet.exe" /link /SUBSYSTEM:WINDOWS,10.00 /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT /guard:cf /MANIFEST:EMBED /MANIFESTINPUT:"$manifestPath" user32.lib gdi32.lib shell32.lib ole32.lib advapi32.lib comctl32.lib uxtheme.lib
 if errorlevel 1 exit /b 1
